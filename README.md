@@ -1,0 +1,11 @@
+# MarketdogCore
+
+供看盘狗 macOS 与 iOS 共同使用的 Swift Package，支持 macOS 14+ 和 iOS 16+。
+
+- `OKXClient`：只读 REST 请求、签名、限流重试。
+- `OKXModels`：OKX 响应、持仓、余额与行情模型。
+- `PlatformWebSocket`：连接、订阅、心跳和断线重连；具体频道由 App 注入。
+
+界面、凭证保存位置、账户状态和平台生命周期不放进共享层。
+
+在此目录运行 `swift test` 可验证共享模型和错误判定；两个 App 还需分别构建。
