@@ -89,3 +89,15 @@ import Testing
     basis.apply(.init(accountID: "a", currency: "BTC", kind: .sell, quantity: 1))
     #expect(basis.averagePrice == 70_010)
 }
+
+@Test func credentialQRRoundTripAndRejectsInvalidContent() throws {
+    let original = OKXCredentialTransfer(name: "主账户", apiKey: "key", secretKey: "secret", passphrase: "pass", simulated: true)
+    let encoded = try original.encode()
+    #expect(try OKXCredentialTransfer.decode(encoded) == original)
+    #expect(throws: OKXCredentialTransfer.TransferError.self) {
+        try OKXCredentialTransfer.decode("https://example.com")
+    }
+    #expect(throws: OKXCredentialTransfer.TransferError.self) {
+        try OKXCredentialTransfer(name: "", apiKey: "", secretKey: "", passphrase: "", simulated: false).encode()
+    }
+}
