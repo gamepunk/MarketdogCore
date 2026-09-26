@@ -80,3 +80,12 @@ import Testing
     #expect(OKXDisplayValues.changeRatio(positionRatio: 0.1, rolling24hRatio: 0.2) == 0.1)
     #expect(OKXDisplayValues.changeRatio(positionRatio: nil, rolling24hRatio: 0.2) == 0.2)
 }
+
+@Test func sharesSpotWeightedAverageCost() {
+    var basis = SpotCostBasis()
+    basis.apply(.init(accountID: "a", currency: "BTC", kind: .buy, quantity: 1, unitPrice: 60_000))
+    basis.apply(.init(accountID: "a", currency: "BTC", kind: .buy, quantity: 2, unitPrice: 75_000, fee: 30))
+    #expect(basis.averagePrice == 70_010)
+    basis.apply(.init(accountID: "a", currency: "BTC", kind: .sell, quantity: 1))
+    #expect(basis.averagePrice == 70_010)
+}
