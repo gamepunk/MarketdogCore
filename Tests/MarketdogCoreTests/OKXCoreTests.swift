@@ -54,3 +54,20 @@ import Testing
     #expect(position.pos == "0")
     #expect(OKXPortfolioMapping.contract(position) == nil)
 }
+
+@Test func mapsGridAnalysisInCore() throws {
+    let data = Data(#"{"algoId":"123","algoOrdType":"grid","instId":"BTC-USDT","totalPnl":"12.5","pnlRatio":"0.1","investment":"125"}"#.utf8)
+    let raw = try JSONDecoder().decode(OKXGridAlgoRaw.self, from: data)
+    let mapped = try #require(OKXPortfolioService.mapGridAlgos([raw], type: "grid").first)
+    #expect(mapped.id == "123")
+    #expect(mapped.profitUSD == 12.5)
+    #expect(mapped.profitRatio == 0.1)
+    #expect(mapped.investmentUSD == 125)
+}
+
+@Test func buildsPublicTickerSubscriptionInCore() {
+    let request = OKXPublicTickerStream.subscription(op: "subscribe", ids: ["BTC-USDT"])
+    #expect(request["op"] as? String == "subscribe")
+    let args = request["args"] as? [[String: String]]
+    #expect(args?.first?["instId"] == "BTC-USDT")
+}
