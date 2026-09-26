@@ -4,7 +4,10 @@
 
 - `OKXClient`：只读 REST 请求、签名、限流重试。
 - `OKXModels`：OKX 响应、持仓、余额与行情模型。
+- `OKXPortfolioMapping`：两端共用的合约、现货数量与盈亏字段映射。
+- `OKXMarketData`：行情推送解码、交易对代号与三种涨跌口径。
 - `PlatformWebSocket`：连接、订阅、心跳和断线重连；具体频道由 App 注入。
+- `OKXWebSocketClient`：只读私有 `positions` 推送，供两端更新合约持仓。
 
 界面、凭证保存位置、账户状态和平台生命周期不放进共享层。
 
