@@ -46,8 +46,14 @@ public struct OKXPortfolioService: Sendable {
     public func fetch(selection: OKXPortfolioSelection = .init()) async throws -> OKXPortfolioSnapshot {
         // 权益始终取一次；只显示合约时也不能丢失账户总权益。
         async let positions = selection.positions ? client.fetchPositions() : []
-        async let balances = client.fetchBalance()
-        let (rawPositions, rawBalances) = try await (positions, balances)
+        let rawBalances: [OKXBalanceRaw]
+        if selection.spots {
+            rawBalances = try await client.fetchBalance()
+        } else {
+            // 仅显示合约时，总权益是附加信息；余额接口失败不应隐藏持仓。
+            rawBalances = (try? await client.fetchBalance()) ?? []
+        }
+        let rawPositions = try await positions
         var grids: [OKXMappedGridAlgo] = []
         if selection.gridAlgos {
             // 策略权限可能未开通，不应让它阻断普通持仓。
