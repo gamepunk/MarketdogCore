@@ -71,3 +71,12 @@ import Testing
     let args = request["args"] as? [[String: String]]
     #expect(args?.first?["instId"] == "BTC-USDT")
 }
+
+@Test func sharesDisplayValueRulesAcrossApps() {
+    #expect(OKXDisplayValues.primaryNumber(kind: .contract, livePrice: 72, markPrice: 71, lastPrice: 70, valueUSD: 100) == 72)
+    #expect(OKXDisplayValues.primaryNumber(kind: .contract, livePrice: nil, markPrice: 71, lastPrice: 70, valueUSD: 100) == 71)
+    #expect(OKXDisplayValues.primaryNumber(kind: .spot, livePrice: 72, markPrice: nil, lastPrice: nil, valueUSD: 100) == 100)
+    #expect(OKXDisplayValues.primaryNumber(kind: .strategy, livePrice: nil, markPrice: nil, lastPrice: nil, valueUSD: 125) == 125)
+    #expect(OKXDisplayValues.changeRatio(positionRatio: 0.1, rolling24hRatio: 0.2) == 0.1)
+    #expect(OKXDisplayValues.changeRatio(positionRatio: nil, rolling24hRatio: 0.2) == 0.2)
+}

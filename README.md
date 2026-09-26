@@ -8,6 +8,7 @@
 - `OKXPortfolioService`：统一拉取并整理合约、现货、策略和总权益快照。
 - `OKXMarketData`：行情推送解码、交易对代号与三种涨跌口径。
 - `OKXMarketService`：公开行情批量查询、限速分批与涨跌计算。
+- `OKXDisplayValues`：两端统一的价格、资产价值及涨跌回退口径，不包含 UI。
 - `PlatformWebSocket`：连接、订阅、心跳和断线重连。
 - `OKXPublicTickerStream`：两端共用的公开行情订阅与解析。
 - `OKXWebSocketClient`：只读私有 `positions` 推送，供两端更新合约持仓。
