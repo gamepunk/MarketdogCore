@@ -40,6 +40,18 @@ public final class OKXClient: Sendable {
         try await get(path: "/api/v5/account/balance")
     }
 
+    /// OKX 对交易、资金、赚币等账户进行统一估值；由服务端将各币种折算成 USDT。
+    public func fetchAssetValuationUSDT() async throws -> OKXAssetValuationRaw {
+        let items: [OKXAssetValuationRaw] = try await get(
+            path: "/api/v5/asset/asset-valuation",
+            queryItems: [URLQueryItem(name: "ccy", value: "USDT")]
+        )
+        guard let valuation = items.first else {
+            throw ExchangeError.apiError(code: "empty", message: "账户资产估值无数据")
+        }
+        return valuation
+    }
+
     /// 策略机器人（网格 / 合约网格）当前运行中的持仓
     public func fetchGridAlgos(type: String) async throws -> [OKXGridAlgoRaw] {
         try await get(

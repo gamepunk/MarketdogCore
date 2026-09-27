@@ -10,6 +10,13 @@ import Testing
     #expect(response.data.first?.details.first?.ccy == "BTC")
 }
 
+@Test func decodesAllAccountAssetValuationInUSDT() throws {
+    let json = Data(#"{"code":"0","msg":"","data":[{"details":{"trading":"100","funding":"20","earn":"5"},"totalBal":"125.5"}]}"#.utf8)
+    let response = try JSONDecoder().decode(OKXResponse<OKXAssetValuationRaw>.self, from: json)
+    #expect(response.data.first?.totalUSDT == 125.5)
+    #expect(response.data.first?.details?.funding == "20")
+}
+
 @Test func retryableExchangeError() {
     #expect(ExchangeError.httpError(429, "").isRetryable)
     #expect(!ExchangeError.httpError(401, "").isRetryable)

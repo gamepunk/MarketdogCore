@@ -95,6 +95,23 @@ public struct OKXPositionRaw: Decodable {
 
 // MARK: - 账户余额 / 现货持仓 (/api/v5/account/balance)
 
+/// OKX 全账户资产估值（交易、资金、赚币等）；请求时指定 USDT 为计价单位。
+public struct OKXAssetValuationRaw: Decodable, Sendable {
+    public let totalBal: String?
+    public let details: Details?
+
+    public struct Details: Decodable, Sendable {
+        public let trading: String?
+        public let funding: String?
+        public let earn: String?
+    }
+
+    public var totalUSDT: Double? {
+        guard let totalBal, let value = Double(totalBal), value.isFinite else { return nil }
+        return value
+    }
+}
+
 public struct OKXBalanceRaw: Decodable {
     public let totalEq: String?
     public let details: [OKXBalanceDetailRaw]
