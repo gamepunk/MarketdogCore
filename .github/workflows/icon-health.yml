@@ -1,0 +1,17 @@
+name: Coin icon health
+on:
+  push:
+    paths:
+      - 'Sources/MarketdogCore/CoinIconCatalog.swift'
+      - 'Sources/CoinIconHealth/**'
+      - '.github/workflows/icon-health.yml'
+  schedule:
+    - cron: '23 3 * * 1'
+  workflow_dispatch:
+jobs:
+  check:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check mapped icon sources
+        run: swift run CoinIconHealth

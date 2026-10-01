@@ -12,6 +12,7 @@ let package = Package(
     ],
     targets: [
         .target(name: "MarketdogCore"),
+        .executableTarget(name: "CoinIconHealth", dependencies: ["MarketdogCore"]),
         .testTarget(name: "MarketdogCoreTests", dependencies: ["MarketdogCore"])
     ]
 )
