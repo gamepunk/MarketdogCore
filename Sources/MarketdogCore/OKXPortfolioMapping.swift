@@ -123,7 +123,7 @@ public enum OKXPortfolioMapping {
 
     public static func onChainEarn(_ orders: [OKXOnChainEarnOrderRaw]) -> [OKXMappedEarn] {
         orders.flatMap { order in
-            order.investData.compactMap { investment in
+            (order.investData ?? []).compactMap { investment in
                 guard let quantity = Double(investment.amt), quantity.isFinite, quantity > 0 else { return nil }
                 return OKXMappedEarn(id: "onchain-\(order.ordId)-\(investment.ccy)",
                                      currency: investment.ccy, quantity: quantity,

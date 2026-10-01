@@ -58,6 +58,11 @@ import Testing
     #expect(onChain.map(\.id) == ["onchain-42-APT", "onchain-42-BTC", "onchain-43-ETH"])
     #expect(flexible.first?.quantity == 2.5)
     #expect(onChain.first?.quantity == 3)
+
+    let pending = try JSONDecoder().decode(OKXOnChainEarnOrderRaw.self, from: Data(
+        #"{"ordId":"44","state":"2","protocolType":"defi"}"#.utf8
+    ))
+    #expect(pending.investData == nil)
 }
 
 @Test func decodesLiveTickerWithThreeChangeBases() throws {

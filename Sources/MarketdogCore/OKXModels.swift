@@ -141,7 +141,8 @@ public struct OKXOnChainEarnOrderRaw: Decodable, Sendable {
     public let ordId: String
     public let state: String?
     public let protocolType: String?
-    public let investData: [Investment]
+    /// OKX may omit this field for an order that is between redemption states.
+    public let investData: [Investment]?
 }
 
 // MARK: - 策略机器人持仓 (/api/v5/tradingBot/grid/orders-algo-pending)

@@ -47,7 +47,22 @@ public final class OKXClient: Sendable {
 
     /// 链上赚币/质押的进行中订单。只读，不调用申购或赎回接口。
     public func fetchOnChainEarnOrders() async throws -> [OKXOnChainEarnOrderRaw] {
-        try await get(path: "/api/v5/finance/staking-defi/orders-active")
+        var orders: [OKXOnChainEarnOrderRaw] = []
+        var after: String?
+        // OKX limits this endpoint to 100 records per request. Follow `after`
+        // until the final page so smaller earn positions are not silently lost.
+        for _ in 0..<20 {
+            var query = [URLQueryItem(name: "limit", value: "100")]
+            if let after { query.append(URLQueryItem(name: "after", value: after)) }
+            let page: [OKXOnChainEarnOrderRaw] = try await get(
+                path: "/api/v5/finance/staking-defi/orders-active",
+                queryItems: query
+            )
+            orders.append(contentsOf: page)
+            guard page.count == 100, let last = page.last?.ordId, last != after else { break }
+            after = last
+        }
+        return orders
     }
 
     /// OKX 对交易、资金、赚币等账户进行统一估值；由服务端将各币种折算成 USDT。
