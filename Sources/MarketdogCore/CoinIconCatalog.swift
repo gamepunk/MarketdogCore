@@ -10,7 +10,11 @@ public enum CoinIconCatalog {
     ]
     // Web3 Icons' token APT graphic differs from Aptos' published logomark.
     // Use its Aptos network mark, packaged as a high-contrast circular badge.
-    private static let bundledOverrides = ["APT": "APTOS"]
+    private static let bundledOverrides = [
+        "APT": "APTOS",
+        // Web3 Icons' ARB token file depicts another mark; use Arbitrum One's logo.
+        "ARB": "ARBITRUM"
+    ]
 
     private static let namedSources: [String: [String]] = [
         "APT": [

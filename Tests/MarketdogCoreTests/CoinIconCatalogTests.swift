@@ -25,7 +25,8 @@ import Testing
         #expect(CoinIconCatalog.bundledImageURL(for: "../oops") == nil)
     }
 
-    @Test func aptUsesAptosLogomark() {
+    @Test func ambiguousTickersUseVerifiedNetworkLogomarks() {
         #expect(CoinIconCatalog.bundledImageURL(for: "APT-SWAP")?.lastPathComponent == "APTOS.svg")
+        #expect(CoinIconCatalog.bundledImageURL(for: "ARB-USDT")?.lastPathComponent == "ARBITRUM.svg")
     }
 }

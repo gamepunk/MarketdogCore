@@ -44,10 +44,13 @@ public struct OKXPortfolioSelection: Sendable {
 /// OKX 请求编排和业务映射均留在 Core；App 只投影为平台专属展示模型。
 public struct OKXPortfolioService: Sendable {
     private let client: OKXClient
+    private let valuationKey: String
     private static let earnPrices = OKXEarnPriceCache()
+    private static let valuationCache = OKXValuationCache()
 
     public init(credentials: OKXClient.Credentials) {
         client = OKXClient { credentials }
+        valuationKey = "\(credentials.simulated)-\(credentials.apiKey)"
     }
 
     public func fetch(selection: OKXPortfolioSelection = .init()) async throws -> OKXPortfolioSnapshot {
@@ -94,7 +97,7 @@ public struct OKXPortfolioService: Sendable {
             positions: rawPositions.compactMap(OKXPortfolioMapping.contract),
             spots: selection.spots ? OKXPortfolioMapping.spots(rawBalances) : [],
             gridAlgos: grids,
-            totalEquityUSD: (try? await client.fetchAssetValuationUSDT().totalUSDT)
+            totalEquityUSD: await Self.valuationCache.totalUSD(for: valuationKey, client: client)
                 ?? rawBalances.first?.totalEq.flatMap(Double.init),
             earns: earns,
             warnings: warnings
@@ -112,6 +115,21 @@ public struct OKXPortfolioService: Sendable {
                 investmentUSD: raw.investment.flatMap(Double.init)
             )
         }
+    }
+}
+
+/// 全资产估值接口按用户每秒只允许一次请求；短刷新间隔下复用最近的成功值。
+private actor OKXValuationCache {
+    private var values: [String: (date: Date, total: Double)] = [:]
+
+    func totalUSD(for key: String, client: OKXClient) async -> Double? {
+        let previous = values[key]
+        if let previous, Date().timeIntervalSince(previous.date) < 30 { return previous.total }
+        guard let total = try? await client.fetchAssetValuationUSDT().totalUSDT else {
+            return previous?.total
+        }
+        values[key] = (Date(), total)
+        return total
     }
 }
 
