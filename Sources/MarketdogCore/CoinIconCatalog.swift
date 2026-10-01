@@ -8,6 +8,9 @@ public enum CoinIconCatalog {
         "XBT": "BTC", "WETH": "ETH", "WBTC": "BTC",
         "LUNA2": "LUNA", "BCHSV": "BSV"
     ]
+    // Web3 Icons' token APT graphic differs from Aptos' published logomark.
+    // Use its Aptos network mark, packaged as a high-contrast circular badge.
+    private static let bundledOverrides = ["APT": "APTOS"]
 
     private static let namedSources: [String: [String]] = [
         "APT": [
@@ -44,7 +47,7 @@ public enum CoinIconCatalog {
         guard !currency.isEmpty,
               currency.unicodeScalars.allSatisfy({ CharacterSet.alphanumerics.contains($0) && $0.isASCII })
         else { return nil }
-        let icon = aliases[currency] ?? currency
+        let icon = bundledOverrides[currency] ?? aliases[currency] ?? currency
         return Bundle.module.url(forResource: icon, withExtension: "svg", subdirectory: "CoinIcons")
     }
 

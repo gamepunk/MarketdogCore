@@ -24,4 +24,8 @@ import Testing
         }
         #expect(CoinIconCatalog.bundledImageURL(for: "../oops") == nil)
     }
+
+    @Test func aptUsesAptosLogomark() {
+        #expect(CoinIconCatalog.bundledImageURL(for: "APT-SWAP")?.lastPathComponent == "APTOS.svg")
+    }
 }
