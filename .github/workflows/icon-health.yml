@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - 'Sources/MarketdogCore/CoinIconCatalog.swift'
+      - 'Sources/MarketdogCore/Resources/**'
       - 'Sources/CoinIconHealth/**'
       - '.github/workflows/icon-health.yml'
   schedule:

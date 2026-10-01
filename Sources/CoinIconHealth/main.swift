@@ -5,6 +5,11 @@ import MarketdogCore
 struct CoinIconHealth {
     static func main() async {
         var failures: [String] = []
+        if CoinIconCatalog.bundledImageURL(for: "BTC") == nil ||
+           CoinIconCatalog.bundledImageURL(for: "APT") == nil ||
+           CoinIconCatalog.bundledImageURL(for: "HYPE") == nil {
+            failures.append("bundled Web3 Icons are missing")
+        }
         for currency in CoinIconCatalog.explicitlyMappedCurrencies {
             guard let url = CoinIconCatalog.imageURLs(for: currency).first else {
                 failures.append("\(currency): no configured image")

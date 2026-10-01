@@ -15,4 +15,13 @@ import Testing
         #expect(CoinIconCatalog.imageURLs(for: "WETH").first?.lastPathComponent == "eth.png")
         #expect(CoinIconCatalog.imageURLs(for: "../../oops").isEmpty)
     }
+
+    @Test func bundledWeb3IconsAreAvailable() {
+        for symbol in ["BTC", "ETH", "APT", "HYPE", "ZEC", "ARB"] {
+            let url = CoinIconCatalog.bundledImageURL(for: "\(symbol)-SWAP")
+            #expect(url?.pathExtension == "svg")
+            #expect(url.flatMap { try? Data(contentsOf: $0) }.map { !$0.isEmpty } == true)
+        }
+        #expect(CoinIconCatalog.bundledImageURL(for: "../oops") == nil)
+    }
 }

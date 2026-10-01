@@ -14,6 +14,9 @@
 - `PlatformWebSocket`：连接、订阅、心跳和断线重连。
 - `OKXPublicTickerStream`：两端共用的公开行情订阅与解析。
 - `OKXWebSocketClient`：只读私有 `positions` 推送，供两端更新合约持仓。
+- `CoinIconCatalog`：两端共用的币种图标映射与内置 SVG 资源路径。
+
+图标资源来自 [Web3 Icons](https://github.com/0xa3k5/web3icons) 的 `raw-svgs/tokens/branded`，固定上游提交 `ad3cbe05229db54931cd8b2c2a86662288a0ce50`。Core 内置 1,791 个币种 SVG；HYPE 使用同一上游的 `raw-svgs/networks/branded/hyper-evm.svg`（Hyperliquid 网络标志）。原始 SVG 保存在 `Sources/MarketdogCore/Resources/CoinIcons/`，不预先转成位图；各 App 负责渲染并缓存结果。上游 MIT 许可随资源包含在 `WEB3ICONS-LICENSE.txt`，项目标志仍可能涉及各自的商标权。
 
 Core 负责 OKX 读取、解析、归一化和分析；App 只保留 UI、布局、凭证保存位置和平台生命周期。
 

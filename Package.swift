@@ -11,7 +11,10 @@ let package = Package(
         .library(name: "MarketdogCore", targets: ["MarketdogCore"])
     ],
     targets: [
-        .target(name: "MarketdogCore"),
+        .target(name: "MarketdogCore", resources: [
+            .copy("Resources/CoinIcons"),
+            .copy("Resources/WEB3ICONS-LICENSE.txt")
+        ]),
         .executableTarget(name: "CoinIconHealth", dependencies: ["MarketdogCore"]),
         .testTarget(name: "MarketdogCoreTests", dependencies: ["MarketdogCore"])
     ]

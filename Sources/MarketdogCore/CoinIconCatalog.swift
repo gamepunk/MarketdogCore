@@ -37,6 +37,17 @@ public enum CoinIconCatalog {
         return addresses.compactMap(URL.init(string:))
     }
 
+    /// The Web3 Icons SVG bundled with MarketdogCore, if this symbol is covered.
+    /// Callers should try this before making any network request.
+    public static func bundledImageURL(for instrument: String) -> URL? {
+        let currency = currency(from: instrument)
+        guard !currency.isEmpty,
+              currency.unicodeScalars.allSatisfy({ CharacterSet.alphanumerics.contains($0) && $0.isASCII })
+        else { return nil }
+        let icon = aliases[currency] ?? currency
+        return Bundle.module.url(forResource: icon, withExtension: "svg", subdirectory: "CoinIcons")
+    }
+
     /// Mapped symbols for which the generic icon package is known to be incomplete.
     public static let explicitlyMappedCurrencies = ["APT", "HYPE"]
 }
