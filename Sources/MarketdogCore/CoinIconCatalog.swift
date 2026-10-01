@@ -15,7 +15,8 @@ public enum CoinIconCatalog {
             "https://cryptologos.cc/logos/aptos-apt-logo.png"
         ],
         "HYPE": [
-            "https://coin-images.coingecko.com/coins/images/50882/large/hyperliquid.jpg?1729431300"
+            "https://github.com/hyperliquid-dex.png?size=256",
+            "https://raw.githubusercontent.com/ErikThiart/cryptocurrency-icons/master/128/hyperliquid.png"
         ]
     ]
 

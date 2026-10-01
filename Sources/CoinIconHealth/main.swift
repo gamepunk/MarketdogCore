@@ -15,10 +15,9 @@ struct CoinIconHealth {
                 request.timeoutInterval = 15
                 let (data, response) = try await URLSession.shared.data(for: request)
                 let status = (response as? HTTPURLResponse)?.statusCode ?? 0
-                let validImage = data.starts(with: [0x89, 0x50, 0x4E, 0x47])
-                    || data.starts(with: [0xFF, 0xD8, 0xFF])
-                guard status == 200, response.mimeType?.hasPrefix("image/") == true,
-                      !data.isEmpty, data.count <= 2_000_000, validImage else {
+                let isPNG = data.starts(with: [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A])
+                guard status == 200, response.mimeType == "image/png",
+                      !data.isEmpty, data.count <= 2_000_000, isPNG else {
                     failures.append("\(currency): invalid response (HTTP \(status)) at \(url)")
                     continue
                 }
