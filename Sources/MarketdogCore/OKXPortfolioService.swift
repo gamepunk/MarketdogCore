@@ -3,12 +3,16 @@ import Foundation
 public struct OKXPortfolioSnapshot: Sendable {
     public let positions: [OKXMappedPosition]
     public let spots: [OKXMappedSpot]
+    public let earns: [OKXMappedEarn]
+    public let warnings: [String]
     public let gridAlgos: [OKXMappedGridAlgo]
     public let totalEquityUSD: Double?
 
-    public init(positions: [OKXMappedPosition], spots: [OKXMappedSpot], gridAlgos: [OKXMappedGridAlgo], totalEquityUSD: Double?) {
+    public init(positions: [OKXMappedPosition], spots: [OKXMappedSpot], gridAlgos: [OKXMappedGridAlgo], totalEquityUSD: Double?, earns: [OKXMappedEarn] = [], warnings: [String] = []) {
         self.positions = positions
         self.spots = spots
+        self.earns = earns
+        self.warnings = warnings
         self.gridAlgos = gridAlgos
         self.totalEquityUSD = totalEquityUSD
     }
@@ -26,11 +30,13 @@ public struct OKXMappedGridAlgo: Sendable {
 public struct OKXPortfolioSelection: Sendable {
     public let positions: Bool
     public let spots: Bool
+    public let earns: Bool
     public let gridAlgos: Bool
 
-    public init(positions: Bool = true, spots: Bool = true, gridAlgos: Bool = false) {
+    public init(positions: Bool = true, spots: Bool = true, gridAlgos: Bool = false, earns: Bool = false) {
         self.positions = positions
         self.spots = spots
+        self.earns = earns
         self.gridAlgos = gridAlgos
     }
 }
@@ -38,6 +44,7 @@ public struct OKXPortfolioSelection: Sendable {
 /// OKX 请求编排和业务映射均留在 Core；App 只投影为平台专属展示模型。
 public struct OKXPortfolioService: Sendable {
     private let client: OKXClient
+    private static let earnPrices = OKXEarnPriceCache()
 
     public init(credentials: OKXClient.Credentials) {
         client = OKXClient { credentials }
@@ -54,6 +61,26 @@ public struct OKXPortfolioService: Sendable {
             rawBalances = (try? await client.fetchBalance()) ?? []
         }
         let rawPositions = try await positions
+        var earns: [OKXMappedEarn] = []
+        var warnings: [String] = []
+        if selection.earns {
+            // 赚币权限/产品可能不可用；单个产品失败不应隐藏交易账户资产。
+            async let flexible = client.fetchSavingsBalance()
+            async let onChain = client.fetchOnChainEarnOrders()
+            do { earns += OKXPortfolioMapping.flexibleEarn(try await flexible) }
+            catch { warnings.append("简单赚币读取失败：\(error.localizedDescription)") }
+            do { earns += OKXPortfolioMapping.onChainEarn(try await onChain) }
+            catch { warnings.append("链上赚币读取失败：\(error.localizedDescription)") }
+            if !earns.isEmpty {
+                let prices = await Self.earnPrices.prices()
+                earns = earns.map { asset in
+                    OKXMappedEarn(id: asset.id, currency: asset.currency,
+                                  quantity: asset.quantity,
+                                  valueUSD: prices[asset.currency].map { $0 * asset.quantity },
+                                  kind: asset.kind)
+                }
+            }
+        }
         var grids: [OKXMappedGridAlgo] = []
         if selection.gridAlgos {
             // 策略权限可能未开通，不应让它阻断普通持仓。
@@ -67,7 +94,10 @@ public struct OKXPortfolioService: Sendable {
             positions: rawPositions.compactMap(OKXPortfolioMapping.contract),
             spots: selection.spots ? OKXPortfolioMapping.spots(rawBalances) : [],
             gridAlgos: grids,
-            totalEquityUSD: rawBalances.first?.totalEq.flatMap(Double.init)
+            totalEquityUSD: (try? await client.fetchAssetValuationUSDT().totalUSDT)
+                ?? rawBalances.first?.totalEq.flatMap(Double.init),
+            earns: earns,
+            warnings: warnings
         )
     }
 
@@ -82,6 +112,28 @@ public struct OKXPortfolioService: Sendable {
                 investmentUSD: raw.investment.flatMap(Double.init)
             )
         }
+    }
+}
+
+/// 行情公开接口限时缓存，避免短刷新间隔时每秒重复拉全市场现货报价。
+private actor OKXEarnPriceCache {
+    private let client = OKXClient { nil }
+    private var cached: [String: Double] = ["USDT": 1]
+    private var fetchedAt: Date = .distantPast
+
+    func prices() async -> [String: Double] {
+        guard Date().timeIntervalSince(fetchedAt) >= 60 else { return cached }
+        guard let tickers = try? await client.fetchSpotTickers() else { return cached }
+        var next: [String: Double] = ["USDT": 1]
+        for ticker in tickers {
+            guard let id = ticker.instId, id.hasSuffix("-USDT"),
+                  let price = ticker.last.flatMap(Double.init), price.isFinite, price > 0
+            else { continue }
+            next[String(id.dropLast(5))] = price
+        }
+        cached = next
+        fetchedAt = Date()
+        return cached
     }
 }
 

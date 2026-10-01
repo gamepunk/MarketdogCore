@@ -43,6 +43,19 @@ public struct OKXMappedSpot: Sendable {
     public let profitUSD: Double?
 }
 
+public struct OKXMappedEarn: Sendable {
+    public enum Kind: Sendable {
+        case flexible
+        case onChain
+    }
+
+    public let id: String
+    public let currency: String
+    public let quantity: Double
+    public let valueUSD: Double?
+    public let kind: Kind
+}
+
 public enum OKXPortfolioMapping {
     /// REST 快照和私有 WebSocket 增量共用同一个稳定键；平仓时也能找到旧持仓。
     public static func positionKey(_ raw: OKXPositionRaw) -> String {
@@ -97,6 +110,25 @@ public enum OKXPortfolioMapping {
                 valueUSD: detail.eqUsd.flatMap(Double.init),
                 profitUSD: detail.upl.flatMap(Double.init)
             )
+        }
+    }
+
+    public static func flexibleEarn(_ balances: [OKXSavingsBalanceRaw]) -> [OKXMappedEarn] {
+        balances.compactMap { balance in
+            guard let quantity = Double(balance.amt), quantity.isFinite, quantity > 0 else { return nil }
+            return OKXMappedEarn(id: "flexible-\(balance.ccy)", currency: balance.ccy,
+                                 quantity: quantity, valueUSD: nil, kind: .flexible)
+        }
+    }
+
+    public static func onChainEarn(_ orders: [OKXOnChainEarnOrderRaw]) -> [OKXMappedEarn] {
+        orders.flatMap { order in
+            order.investData.compactMap { investment in
+                guard let quantity = Double(investment.amt), quantity.isFinite, quantity > 0 else { return nil }
+                return OKXMappedEarn(id: "onchain-\(order.ordId)-\(investment.ccy)",
+                                     currency: investment.ccy, quantity: quantity,
+                                     valueUSD: nil, kind: .onChain)
+            }
         }
     }
 }

@@ -125,6 +125,25 @@ public struct OKXBalanceDetailRaw: Decodable {
     public let upl: String?
 }
 
+// MARK: - 赚币（简单赚币活期 / 链上赚币）
+
+public struct OKXSavingsBalanceRaw: Decodable, Sendable {
+    public let ccy: String
+    public let amt: String
+}
+
+public struct OKXOnChainEarnOrderRaw: Decodable, Sendable {
+    public struct Investment: Decodable, Sendable {
+        public let ccy: String
+        public let amt: String
+    }
+
+    public let ordId: String
+    public let state: String?
+    public let protocolType: String?
+    public let investData: [Investment]
+}
+
 // MARK: - 策略机器人持仓 (/api/v5/tradingBot/grid/orders-algo-pending)
 
 public struct OKXGridAlgoRaw: Decodable {

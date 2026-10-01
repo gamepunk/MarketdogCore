@@ -40,6 +40,16 @@ public final class OKXClient: Sendable {
         try await get(path: "/api/v5/account/balance")
     }
 
+    /// 简单赚币活期余额；与交易账户余额分开，不能从 /account/balance 推断。
+    public func fetchSavingsBalance() async throws -> [OKXSavingsBalanceRaw] {
+        try await get(path: "/api/v5/finance/savings/balance")
+    }
+
+    /// 链上赚币/质押的进行中订单。只读，不调用申购或赎回接口。
+    public func fetchOnChainEarnOrders() async throws -> [OKXOnChainEarnOrderRaw] {
+        try await get(path: "/api/v5/finance/staking-defi/orders-active")
+    }
+
     /// OKX 对交易、资金、赚币等账户进行统一估值；由服务端将各币种折算成 USDT。
     public func fetchAssetValuationUSDT() async throws -> OKXAssetValuationRaw {
         let items: [OKXAssetValuationRaw] = try await get(
@@ -76,6 +86,13 @@ public final class OKXClient: Sendable {
             throw ExchangeError.apiError(code: "empty", message: "行情无数据")
         }
         return ticker
+    }
+
+    /// 批量现货行情，供赚币资产折算为 USDT；不需要 API 凭证。
+    public func fetchSpotTickers() async throws -> [OKXTickerRaw] {
+        try await getPublic(path: "/api/v5/market/tickers", queryItems: [
+            URLQueryItem(name: "instType", value: "SPOT")
+        ])
     }
 
     // MARK: - 核心请求 + 签名

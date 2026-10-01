@@ -45,6 +45,21 @@ import Testing
     #expect(spots.map(\.currency) == ["APT"])
 }
 
+@Test func mapsBothEarnProductsWithoutMixingThemIntoTradingBalance() throws {
+    let savings = try JSONDecoder().decode([OKXSavingsBalanceRaw].self, from: Data(
+        #"[{"ccy":"APT","amt":"2.5"},{"ccy":"ETH","amt":"0"}]"#.utf8
+    ))
+    let orders = try JSONDecoder().decode([OKXOnChainEarnOrderRaw].self, from: Data(
+        #"[{"ordId":"42","state":"1","protocolType":"defi","investData":[{"ccy":"APT","amt":"3"},{"ccy":"BTC","amt":"0.1"}]},{"ordId":"43","protocolType":"other","investData":[{"ccy":"ETH","amt":"1"}]}]"#.utf8
+    ))
+    let flexible = OKXPortfolioMapping.flexibleEarn(savings)
+    let onChain = OKXPortfolioMapping.onChainEarn(orders)
+    #expect(flexible.map(\.id) == ["flexible-APT"])
+    #expect(onChain.map(\.id) == ["onchain-42-APT", "onchain-42-BTC", "onchain-43-ETH"])
+    #expect(flexible.first?.quantity == 2.5)
+    #expect(onChain.first?.quantity == 3)
+}
+
 @Test func decodesLiveTickerWithThreeChangeBases() throws {
     let push = Data(#"{"arg":{"channel":"tickers","instId":"BTC-USDT"},"data":[{"instId":"BTC-USDT","last":"72000","open24h":"70000","sodUtc0":"71000","sodUtc8":"71500"}]}"#.utf8)
     let update = try #require(OKXMarketData.decodeTickerPush(push))
